@@ -1,0 +1,15 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {buildReport,isTextCandidate,demoFiles} from '../src/scanner.js';
+const get=(report,id)=>report.results.find((r)=>r.id===id);
+test('demo checks are narrow and not overall security attestations',()=>{const r=buildReport(demoFiles);assert.equal(get(r,'RR-001').status,'PASS');assert.equal(get(r,'RR-003').status,'PASS');assert.equal(get(r,'RR-004').status,'PASS');assert.equal(get(r,'RR-011').status,'NOT APPLICABLE');assert.equal(get(r,'RR-015').status,'NOT TESTED');assert.equal(r.results.length,16);});
+test('secret signatures never export secret contents',()=>{const s='-----BEGIN PRIVATE KEY-----\nsecret-content\n-----END PRIVATE KEY-----';const r=buildReport([{path:'src/key.js',content:s}]);assert.equal(get(r,'RR-001').status,'FAIL');assert.deepEqual(get(r,'RR-001').evidence,['src/key.js']);assert.ok(!JSON.stringify(r).includes('secret-content'));});
+test('unreadable source disallows a false PASS',()=>assert.equal(get(buildReport([{path:'a.ts',content:null},{path:'b.ts',content:'let x=1;'}]),'RR-001').status,'NOT TESTED'));
+test('missing lockfile is a concrete fail, non-node repos are not applicable',()=>{assert.equal(get(buildReport([{path:'package.json',content:'{}'}]),'RR-003').status,'FAIL');assert.equal(get(buildReport([{path:'README.md',content:'# Hi'}]),'RR-003').status,'NOT APPLICABLE');});
+test('env ignore config is scoped and never asserts a leaked git commit',()=>{const r=buildReport([{path:'.env',content:'A=B'}]);assert.equal(get(r,'RR-002').status,'FAIL');assert.ok(get(r,'RR-002').detail.includes('does not establish'));});
+test('profile switching never fabricates permission or agent eval evidence',()=>{assert.equal(get(buildReport(demoFiles,'backend'),'RR-011').status,'NOT TESTED');assert.equal(get(buildReport(demoFiles,'agent'),'RR-013').status,'NOT TESTED');assert.equal(get(buildReport(demoFiles),'RR-013').status,'NOT APPLICABLE');});
+test('text filtering and bad profiles',()=>{assert.ok(isTextCandidate('src/app.jsx'));assert.ok(!isTextCandidate('image.png'));assert.throws(()=>buildReport([],'broken'),/Unknown profile/);});
+test('browser-danger signals manual review, not verified XSS',()=>{const r=buildReport([{path:'src/view.jsx',content:'el.innerHTML = value;'}]);assert.equal(get(r,'RR-010').status,'NOT TESTED');assert.deepEqual(get(r,'RR-010').evidence,['src/view.jsx']);});
+
+import {TOPICS} from '../src/topics.js';
+test('the curriculum includes all 250 unique, ordered topics',()=>{assert.equal(TOPICS.length,250);assert.equal(new Set(TOPICS.map((t)=>t.number)).size,250);assert.equal(TOPICS[0].name,'SQL Injection');assert.equal(TOPICS[249].number,250);assert.ok(TOPICS.every((t)=>t.name&&t.group));});
