@@ -2,19 +2,59 @@
 
 **Evidence before green checkmarks.**
 
-RepoReady is a free, local-first engineering-readiness tool for source repositories. It helps makers distinguish **verified facts** from **missing tests**, and scale checks to the kind of application they're building.
+RepoReady is a free, local-first workbench for inspecting a source folder against deliberately narrow engineering-readiness checks. It separates verified *file-level observations* from missing runtime tests and non-applicable checks. Built independently with React and Vite.
 
-## Principles
-- **Ledger above ego:** a PASS names the exact check it passed and its supporting evidence.
-- **No fake security grades:** file-presence checks do not prove a system is secure.
-- **Four honest outcomes:** PASS, FAIL, NOT TESTED, and NOT APPLICABLE.
-- **Local first:** scan files in your browser without uploading source code.
-- **Fit for purpose:** static websites, backend applications, and AI agents need different checks.
-- **No secret values in reports:** findings include relative file paths, never captured credentials.
+## What ships in v0.1
 
-## First milestone
-The v0.1 work is developed on a feature branch and reviewed through a pull request. It adds an original React/Vite browser interface, a narrow and testable local scanner, profile-based readiness checks, JSON evidence export, and a GitHub Pages deployment workflow.
+- Browser-only, read-only folder inventory. Source files are not uploaded or executed.
+- Choose a static site, backend, or AI agent profile to tune applicability.
+- Sixteen scoped rule results with exactly four statuses: **PASS**, **FAIL**, **NOT TESTED**, and **NOT APPLICABLE**.
+- Full searchable map of the 250 engineering subjects that inspired the project. It is a curriculum/reference, **not** 250 implemented checks.
+- JSON evidence export, containing paths and rule descriptions but not file contents or captured secrets.
+- Unit tests, CI workflow and a GitHub Pages deployment workflow.
 
-> RepoReady is a development aid, not a penetration test, security certification, or substitute for a human review.
+The scanner reads up to 1,500 relevant files, with a maximum of 256 KB of text per eligible file. Some checks only verify that files or configuration commands are present; they do not establish whether a runtime test passed. This is not a security audit, penetration test, or certification.
 
-MIT License. © 2026 MichaelWave369.
+## Run locally
+
+Requirements: Node.js 20.19 or higher.
+
+~~~sh
+npm install
+npm test
+npm run dev
+~~~
+
+Then open the local URL printed by Vite. Use **Select local source folder** to browse a checked-out repository. The initial view is an explicitly labeled illustrative demo. Use **Clear** to remove the in-memory selection.
+
+To validate a production build:
+
+~~~sh
+npm run build
+npm run preview
+~~~
+
+## GitHub Pages
+
+After merging the feature PR, go to repository **Settings → Pages → Build and deployment → Source: GitHub Actions**. The workflow under .github/workflows/pages.yml builds and deploys on pushes to main. The Vite base path is configured for /RepoReady/.
+
+## What PASS means
+
+A PASS attests **only to the exact condition of the named rule** and its evidence. For instance, test files present is not the same as tests passing; an .env ignore pattern is not proof that secrets were never committed.
+
+- **PASS:** the narrowly specified check observed supporting data.
+- **FAIL:** a narrowly specified configuration problem or signature was observed.
+- **NOT TESTED:** meaningful evidence is absent or the check requires external/manual validation.
+- **NOT APPLICABLE:** excluded by the selected profile or lack of an applicable manifest.
+
+The scanner uses a small signature set and may produce false positives or miss credentials. Never publish a report without reviewing its path information.
+
+## Known gaps and roadmap
+
+- **Reproducibility:** the first PR uses npm install without a checked-in package lockfile. Generate and review one, then replace CI installs with npm ci.
+- **External evidence:** authenticated GitHub checks, vulnerability scans, branch policy, runtime authorization, backup restores and agent adversarial evaluations are not yet performed.
+- **Future:** verified external evidence adapters, immutable receipts, optional reusable gates and clear machine-readable waiver policies.
+
+**Ledger Above Ego.** No fake green checks.
+
+MIT License. Copyright (c) 2026 Michael Hughes.
