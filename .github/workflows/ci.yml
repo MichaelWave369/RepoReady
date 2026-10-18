@@ -15,5 +15,8 @@ jobs:
         with:
           node-version: '22'
       - run: npm install --no-audit --no-fund
+      - name: Capture generated public dependency lockfile for review
+        run: |
+          node -e "const f=require('node:fs'); const b=f.readFileSync('package-lock.json').toString('base64'); for(let i=0;i<b.length;i+=1000) console.log('REPOREADY_LOCK_CHUNK:'+String(i/1000).padStart(4,'0')+':'+b.slice(i,i+1000));"
       - run: npm test
       - run: npm run build
