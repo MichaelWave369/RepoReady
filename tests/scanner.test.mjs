@@ -10,3 +10,6 @@ test('env ignore config is scoped and never asserts a leaked git commit',()=>{co
 test('profile switching never fabricates permission or agent eval evidence',()=>{assert.equal(get(buildReport(demoFiles,'backend'),'RR-011').status,'NOT TESTED');assert.equal(get(buildReport(demoFiles,'agent'),'RR-013').status,'NOT TESTED');assert.equal(get(buildReport(demoFiles),'RR-013').status,'NOT APPLICABLE');});
 test('text filtering and bad profiles',()=>{assert.ok(isTextCandidate('src/app.jsx'));assert.ok(!isTextCandidate('image.png'));assert.throws(()=>buildReport([],'broken'),/Unknown profile/);});
 test('browser-danger signals manual review, not verified XSS',()=>{const r=buildReport([{path:'src/view.jsx',content:'el.innerHTML = value;'}]);assert.equal(get(r,'RR-010').status,'NOT TESTED');assert.deepEqual(get(r,'RR-010').evidence,['src/view.jsx']);});
+
+import {TOPICS} from '../src/topics.js';
+test('the curriculum includes all 250 unique, ordered topics',()=>{assert.equal(TOPICS.length,250);assert.equal(new Set(TOPICS.map((t)=>t.number)).size,250);assert.equal(TOPICS[0].name,'SQL Injection');assert.equal(TOPICS[249].number,250);assert.ok(TOPICS.every((t)=>t.name&&t.group));});
